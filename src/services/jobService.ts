@@ -1,31 +1,26 @@
-import api from "./api";
+import { apiRequest } from "./api";
 import { Job } from "@/types/api";
 
 // CREATE JOB
 export const createJob = async (job: Job): Promise<Job> => {
-  /*
-  FUTURE BACKEND:
-  const response = await api.post("/jobs", job);
-  return response.data;
-  */
-  return Promise.resolve(job);
+  return apiRequest("/jobs", {
+    method: "POST",
+    body: JSON.stringify(job),
+  });
 };
 
 // UPDATE JOB
 export const editJob = async (job: Job): Promise<Job> => {
-  /*
-  FUTURE BACKEND:
-  const response = await api.put(`/jobs/${job.id}`, job);
-  return response.data;
-  */
-  return Promise.resolve(job);
+  return apiRequest(`/jobs/${job.id}`, {
+    method: "PUT",
+    body: JSON.stringify(job),
+  });
 };
 
 // DELETE JOB
 export const deleteJob = async (id: string): Promise<string> => {
-  /*
-  FUTURE BACKEND:
-  await api.delete(`/jobs/${id}`);
-  */
-  return Promise.resolve(id);
+  await apiRequest(`/jobs/${id}`, {
+    method: "DELETE",
+  });
+  return id;
 };

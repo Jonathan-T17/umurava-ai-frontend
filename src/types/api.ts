@@ -21,3 +21,12 @@ export type UploadResponse = {
   count: number;
   message: string;
 };
+
+// src/types/api.ts
+export interface Applicant {
+  id: string;
+  name: string;
+  email?: string;
+  skills?: string[];
+  experience?: number;
+}

@@ -6,6 +6,7 @@ import { useState } from "react";
 // 🟢 NEW: import service layer
 import { runShortlistAnalysis } from "@/services/shortlistService";
 import { Candidate } from "@/types/api";
+import toast from "react-hot-toast";
 
 export default function ShortlistPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -26,8 +27,10 @@ export default function ShortlistPage() {
 
       setCandidates(shortlisted);
       setAnalysisRun(true);
+      toast.success("Analysis completed!"); //new added
     } catch (error) {
       console.error("Error running AI analysis:", error);
+      toast.error("Failed to run analysis."); //new added
     } finally {
       setLoading(false);
     }
@@ -62,14 +65,16 @@ export default function ShortlistPage() {
         </button>
 
         {/* Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-x-auto w-full max-w-5xl">
-          <table className="w-full text-left min-w-[700px]">
+        <div className="bg-white rounded-lg shadow-md overflow-x-auto w-full max-w-7xl">
+          <table className="w-full text-left min-w-[900px]">
             <thead className="bg-gray-100">
               <tr>
                 <th className="p-4">Rank</th>
                 <th className="p-4">Candidate</th>
                 <th className="p-4">Score</th>
                 <th className="p-4">Recommendation</th>
+                <th className="p-4">Strengths</th>
+                <th className="p-4">Gaps</th>
                 <th className="p-4">Status</th>
               </tr>
             </thead>
@@ -78,32 +83,22 @@ export default function ShortlistPage() {
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i} className="border-t">
-                    <td className="p-4">
-                      <div className="h-4 w-12 bg-gray-200 animate-pulse rounded"></div>
-                    </td>
-                    <td className="p-4">
-                      <div className="h-4 w-32 bg-gray-200 animate-pulse rounded"></div>
-                    </td>
-                    <td className="p-4">
-                      <div className="h-4 w-20 bg-gray-200 animate-pulse rounded"></div>
-                    </td>
-                    <td className="p-4">
-                      <div className="h-4 w-40 bg-gray-200 animate-pulse rounded"></div>
-                    </td>
-                    <td className="p-4">
-                      <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
-                    </td>
+                    {[...Array(7)].map((_, j) => (
+                      <td key={j} className="p-4">
+                        <div className="h-4 w-24 bg-gray-200 animate-pulse rounded"></div>
+                      </td>
+                    ))}
                   </tr>
                 ))
               ) : !analysisRun ? (
                 <tr>
-                  <td colSpan={5} className="p-6 text-center text-gray-500">
+                  <td colSpan={7} className="p-6 text-center text-gray-500">
                     No analysis has been run yet.
                   </td>
                 </tr>
               ) : candidates.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="p-6 text-center text-gray-500">
+                  <td colSpan={7} className="p-6 text-center text-gray-500">
                     No shortlisted candidates found.
                   </td>
                 </tr>
@@ -121,8 +116,18 @@ export default function ShortlistPage() {
                     <td className="p-4">{candidate.rank ?? "-"}</td>
                     <td className="p-4">{candidate.name}</td>
                     <td className="p-4">{candidate.score ?? "-"}%</td>
+                    <td className="p-4">{candidate.recommendation ?? "-"}</td>
                     <td className="p-4">
-                      {candidate.recommendation ?? "-"}
+                      {candidate.strengths?.length
+                        ? candidate.strengths.slice(0, 2).join(", ") +
+                          (candidate.strengths.length > 2 ? "..." : "")
+                        : "-"}
+                    </td>
+                    <td className="p-4">
+                      {candidate.gaps?.length
+                        ? candidate.gaps.slice(0, 2).join(", ") +
+                          (candidate.gaps.length > 2 ? "..." : "")
+                        : "-"}
                     </td>
                     <td className="p-4 capitalize">{candidate.status}</td>
                   </tr>

@@ -9,6 +9,7 @@ import { useState } from "react";
 
 // 🟢 NEW: import service layer
 import { createJob } from "@/services/jobService";
+import toast from "react-hot-toast";
 
 type JobFormData = {
   title: string;
@@ -42,11 +43,13 @@ export default function JobCreationPage() {
       dispatch(addJob(savedJob));
 
       setSuccessMessage("Job saved successfully!");
+      toast.success("Job saved successfully!"); //new added
       reset();
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("Error saving job:", error);
       setSuccessMessage("Failed to save job.");
+      toast.error("Failed to save job."); //new added
     }
   };
 

@@ -4,20 +4,23 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
-// 🟢 NEW: import service layer
+// 🟢 service layer
 import { uploadCandidates } from "@/services/uploadService";
+import toast from "react-hot-toast";
 
 export default function UploadPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
 
+  // 🟢 FIX: safe state update
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
+    setFiles((prev) => [...prev, ...acceptedFiles]);
   }, []);
 
+  // 🟢 FIX: prevent stale state issue
   const removeFile = (name: string) => {
-    setFiles(files.filter((file) => file.name !== name));
+    setFiles((prev) => prev.filter((file) => file.name !== name));
   };
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -32,9 +35,12 @@ export default function UploadPage() {
     },
   });
 
-  // 🟢 UPDATED: service-based upload
+  // 🟢 FINAL: backend-ready upload handler
   const handleUpload = async () => {
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      setUploadMessage("Please select files first.");
+      return;
+    }
 
     setIsUploading(true);
     setUploadMessage(null);
@@ -43,14 +49,15 @@ export default function UploadPage() {
       const formData = new FormData();
       files.forEach((file) => formData.append("files", file));
 
-      // 🟢 SERVICE CALL ONLY
       const result = await uploadCandidates(formData);
 
-      setUploadMessage(result.message);
+      setUploadMessage(result.message || "Upload successful!");
+      toast.success(result.message || "Candidates uploaded successfully!"); //new added
       setFiles([]);
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadMessage("Error connecting to server.");
+      setUploadMessage("Upload failed. Please try again.");
+      toast.error("Failed to upload candidates."); //new added
     } finally {
       setIsUploading(false);
     }
@@ -75,11 +82,11 @@ export default function UploadPage() {
           </p>
         </div>
 
-        {/* File Preview List */}
+        {/* File Preview */}
         <div className="mt-6 w-full max-w-2xl space-y-4">
           {files.length === 0 ? (
             <div className="bg-white p-6 rounded-lg shadow-md text-gray-500 text-center">
-              Uploaded candidate resumes will appear here (CSV, Excel, PDF)
+              Uploaded candidate resumes will appear here
             </div>
           ) : (
             files.map((file, index) => (
@@ -105,7 +112,7 @@ export default function UploadPage() {
           )}
         </div>
 
-        {/* Upload Trigger Button */}
+        {/* Upload Button */}
         {files.length > 0 && (
           <button
             onClick={handleUpload}
@@ -120,7 +127,7 @@ export default function UploadPage() {
           </button>
         )}
 
-        {/* Upload Status Message */}
+        {/* Message */}
         {uploadMessage && (
           <p className="mt-4 text-center text-sm text-gray-700 w-full max-w-2xl">
             {uploadMessage}
